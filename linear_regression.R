@@ -46,3 +46,13 @@ plot(Boston$black,Boston$medv)
 
 par(mfrow=c(2,2))
 plot(lm.fit)
+
+
+pairs(Boston)
+
+
+lm1.fit=lm(medv~.+crim*zn*indus*age*ptratio*black*lstat,data=Boston)
+summary(lm1.fit)
+par(mfrow=c(2,2))
+plot(lm1.fit)
+
