@@ -1,4 +1,4 @@
 stat_learning
 =============
 
-R code for Statistical Learning
+R code for excercises related to Stanford's Statistical Learning MOOC
