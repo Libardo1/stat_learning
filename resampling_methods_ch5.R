@@ -47,3 +47,12 @@ for (i in 1:4){
 
   cv.error[i]=cv.glm(data=prostate_cancer, glmfit=glm.fit,K=5)$delta[1]
 }
+
+
+
+#Estimate model parameters via boostrapping
+library(boot)
+boot.fn=function(data,index)
+ coefficients(glm(tumor~age+capsularInvolvement+antigenValue+gleasonScore,data=prostate_cancer,family = binomial,subset=index)) 
+set.seed(1)
+boot(prostate_cancer,boot.fn,1000)
