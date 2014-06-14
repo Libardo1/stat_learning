@@ -1,9 +1,10 @@
 Resampling Methods - Chapter 5
 ========================================================
-Loading Prostate Cancer dataset into R
+### Loading Prostate Cancer dataset into R
 
 
 ```r
+library(ggplot2)
 prostate_cancer <- read.table("~/Documents/github/stat_learning/data/prostate_caner.dat", quote="\"")
 colnames(prostate_cancer)[1] <- "idCode"
 colnames(prostate_cancer)[2] <- "tumor"
@@ -19,41 +20,72 @@ prostate_cancer$rectalExamResult <- as.factor(prostate_cancer$rectalExamResult)
 
 
 
+
 attach(prostate_cancer)
 ```
 
+### Plots of various predictors colored by whether it is cancerous or not
 
-Using the Validation Set Method to Calculate MSE
+
+```r
+ggplot(data=prostate_cancer,aes(x=antigenValue,y=tumorVolume,col=tumor))+geom_point()
+```
+
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-21.png) 
+
+```r
+ggplot(data=prostate_cancer,aes(x=age,y=tumorVolume,col=tumor))+geom_point()
+```
+
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-22.png) 
+
+```r
+ggplot(data=prostate_cancer,aes(x=antigenValue,y=gleasonScore,col=tumor))+geom_point()
+```
+
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-23.png) 
+
+```r
+ggplot(data=prostate_cancer,aes(x=age,y=gleasonScore,col=tumor))+geom_point()
+```
+
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-24.png) 
+
+```r
+ggplot(data=prostate_cancer,aes(x=age,y=antigenValue,col=tumor))+geom_point()
+```
+
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-25.png) 
+
+###  Using the Validation Set Method to Calculate MSE
 
 
 ```r
 train=sample(380,200)
-glm.fit=glm(tumor~age+race+rectalExamResult+capsularInvolvement+antigenValue+gleasonScore,data=prostate_cancer,family = binomial,subset=train)
+glm.fit=glm(tumor~age+rectalExamResult+capsularInvolvement+antigenValue+gleasonScore,data=prostate_cancer,family = binomial,subset=train)
 mean((tumor-predict(glm.fit,prostate_cancer, type="response"))[-train]^2)
 ```
 
 ```
-## Error: factor race has new levels .
+## [1] 0.175
 ```
 
 
-Using the Leave One Out Cross-Validation Set
+###  Using the Leave One Out Cross-Validation Set
 
 ```r
 library(boot)
-glm.fit=glm(tumor~age+race+rectalExamResult+capsularInvolvement+antigenValue+gleasonScore,data=prostate_cancer,family = binomial)
+glm.fit=glm(tumor~age+rectalExamResult+capsularInvolvement+antigenValue+gleasonScore,data=prostate_cancer,family = binomial)
 coef(glm.fit)
 ```
 
 ```
-##         (Intercept)                 age               race1 
-##            -8.58044            -0.01389             0.88570 
-##               race2   rectalExamResult2   rectalExamResult3 
-##             0.14915             0.74509             1.51876 
-##   rectalExamResult4 capsularInvolvement        antigenValue 
-##             1.42882             0.58877             0.02967 
-##        gleasonScore 
-##             0.97695
+##         (Intercept)                 age   rectalExamResult2 
+##            -7.86572            -0.01080             0.73326 
+##   rectalExamResult3   rectalExamResult4 capsularInvolvement 
+##             1.49780             1.36615             0.53790 
+##        antigenValue        gleasonScore 
+##             0.02668             0.97896
 ```
 
 ```r
@@ -62,20 +94,34 @@ kfCV$delta
 ```
 
 ```
-## [1] 0.18 0.18
+## [1] 0.1741 0.1740
 ```
 
-Polynomial Logistic Regression using Leave One Out Cross-Validation
+### Polynomial Logistic Regression using Leave One Out Cross-Validation
 
 ```r
 cv.error=rep(0,5)
 for (i in 1:5){
-  glm.fit=glm(tumor~age+race+rectalExamResult+capsularInvolvement+poly(antigenValue,i)+poly(gleasonScore,i),data=prostate_cancer,family = binomial)
+  glm.fit=glm(tumor~age+rectalExamResult+capsularInvolvement+poly(antigenValue,i)+poly(gleasonScore,i),data=prostate_cancer,family = binomial)
   cv.error[i]=cv.glm(data=prostate_cancer, glmfit=glm.fit)$delta[1]
 }
 ```
 
 ```
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
 ## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
 ## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
 ## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
@@ -1208,26 +1254,22 @@ cv.error
 ```
 
 ```
-## [1] 0.1800 0.1809 0.1824 0.1842 0.1858
+## [1] 0.1741 0.1750 0.1763 0.1780 0.1799
 ```
 
 
-K=5 Cross Validation using Polynomial Regression
+###  K=5 Cross Validation using Polynomial Regression
 
 ```r
 cv.error=rep(0,4)
 for (i in 1:4){
-  glm.fit=glm(tumor~poly(age,i)+race+rectalExamResult+capsularInvolvement+antigenValue+gleasonScore,data=prostate_cancer,family = binomial)
+  glm.fit=glm(tumor~poly(age,i)+rectalExamResult+capsularInvolvement+antigenValue+gleasonScore,data=prostate_cancer,family = binomial)
 
   cv.error[i]=cv.glm(data=prostate_cancer, glmfit=glm.fit,K=5)$delta[1]
 }
 ```
 
-```
-## Error: factor race has new levels .
-```
-
-Estimating Model Parameters via Boot Strapping
+###  Estimating Model Parameters via Boot Strapping
 
 ```r
 library(boot)
